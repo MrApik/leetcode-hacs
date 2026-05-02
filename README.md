@@ -9,8 +9,8 @@
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=MrApik&repository=leetcode-hacs&category=integration)
 
-A Home Assistant custom integration that exposes LeetCode statistics —
-problems solved, contest rating, daily challenge, current streak — as
+A Home Assistant custom integration that exposes LeetCode statistics -
+problems solved, contest rating, daily challenge, current streak - as
 sensors and a binary sensor.
 
 Each configured account is represented by two devices: a per-user
@@ -25,7 +25,7 @@ self-hosted one.
 
 ## Features
 
-- UI configuration — no YAML required.
+- UI configuration - no YAML required.
 - Reauthentication and reconfiguration from the UI.
 - Configurable polling interval and API base URL.
 - Diagnostics download with credentials redacted.
@@ -34,8 +34,8 @@ self-hosted one.
 
 Two devices are created per configured account:
 
-- **`LeetCode <username>`** — your personal sensors.
-- **`LeetCode`** — global data (today's daily challenge, upcoming contests).
+- **`LeetCode <username>`** - your personal sensors.
+- **`LeetCode`** - global data (today's daily challenge, upcoming contests).
 
 ### Per-user device
 
@@ -74,7 +74,7 @@ Two devices are created per configured account:
 | Action | Description |
 | --- | --- |
 | `leetcode_hacs.refresh` | Refresh data immediately, bypassing the polling interval. Optionally targets a single profile via the `entry_id` field; otherwise refreshes every configured profile. |
-| `leetcode_hacs.fetch_problem` | Fetch a single problem's metadata by its `title_slug`. Returns `{title, title_slug, question_id, difficulty, is_paid_only, link, tags, hints, likes, dislikes}` as a service response — usable from scripts, automations, TTS. |
+| `leetcode_hacs.fetch_problem` | Fetch a single problem's metadata by its `title_slug`. Returns `{title, title_slug, question_id, difficulty, is_paid_only, link, tags, hints, likes, dislikes}` as a service response - usable from scripts, automations, TTS. |
 
 ## Events
 
@@ -108,7 +108,7 @@ integration via **Settings → Devices & Services → Add Integration**.
 
 | Field | Default | Notes |
 | --- | --- | --- |
-| Username | — | LeetCode username (case-sensitive). |
+| Username | - | LeetCode username (case-sensitive). |
 | API base URL | `https://alfa-leetcode-api.onrender.com` | Override to point at a self-hosted alfa-leetcode-api instance. |
 | Polling interval | 15 minutes | Minimum 5 minutes (matches the upstream API's response cache). |
 | Streak-warning hour | 20 (8 PM, local time) | Hour after which `binary_sensor.leetcode_<user>_streak_at_risk` flips on if no submission has been made today. |
@@ -132,11 +132,11 @@ integration.
 
 ## Troubleshooting
 
-- **`unknown_user` on setup** — double-check the case of your LeetCode
+- **`unknown_user` on setup** - double-check the case of your LeetCode
   username; the API treats it as case-sensitive.
-- **`rate_limited` on setup** — the public instance is shared and capped
+- **`rate_limited` on setup** - the public instance is shared and capped
   at 120 requests per IP per hour. Wait an hour or self-host.
-- **Stale data** — the upstream API caches responses for 5 minutes, so a
+- **Stale data** - the upstream API caches responses for 5 minutes, so a
   newly solved problem may take that long to appear regardless of the
   polling interval.
 
@@ -155,6 +155,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Acknowledgements
 
 - [alfa-leetcode-api](https://github.com/alfaarghya/alfa-leetcode-api)
-  by [@alfaarghya](https://github.com/alfaarghya) — the API this
+  by [@alfaarghya](https://github.com/alfaarghya) - the API this
   integration consumes.
 - This project is **not** affiliated with LeetCode.
