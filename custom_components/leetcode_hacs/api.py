@@ -380,9 +380,7 @@ def _compute_acceptance_rate(profile: dict[str, Any]) -> float | None:
     ac = stats.get("acSubmissionNum") or []
     total = stats.get("totalSubmissionNum") or []
     ac_all = next((entry for entry in ac if entry.get("difficulty") == "All"), None)
-    total_all = next(
-        (entry for entry in total if entry.get("difficulty") == "All"), None
-    )
+    total_all = next((entry for entry in total if entry.get("difficulty") == "All"), None)
     if not ac_all or not total_all:
         return None
     try:
