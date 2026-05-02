@@ -25,12 +25,35 @@ jobs:
             exit 1
           fi
 
+      - name: Extract CHANGELOG section for this version
+        id: changelog
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          STRIPPED_TAG="${TAG#v}"
+          # Pull lines between `## [STRIPPED_TAG]` and the next `## [`.
+          NOTES=$(awk -v ver="$STRIPPED_TAG" '
+            $0 ~ "^## \\["ver"\\]" { capture = 1; next }
+            capture && /^## \[/ { exit }
+            capture { print }
+          ' CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            echo "No CHANGELOG entry found for version $STRIPPED_TAG" >&2
+            exit 1
+          fi
+          {
+            echo 'notes<<EOF'
+            echo "$NOTES"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
       - name: Create zip artefact
         run: |
           cd custom_components/leetcode_hacs
           zip ../../leetcode_hacs.zip -r ./
 
-      - name: Attach zip to GitHub release
+      - name: Update release with notes + zip
         uses: softprops/action-gh-release@v3
         with:
           files: leetcode_hacs.zip
+          body: ${{ steps.changelog.outputs.notes }}
