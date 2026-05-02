@@ -74,7 +74,9 @@ async def test_fetch_stats_tolerates_aux_endpoint_failures(
     mock_aioresponse: aioresponses, fixture_payloads: dict
 ) -> None:
     """A failing /skill endpoint must not break the whole refresh."""
-    mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}/profile", payload=fixture_payloads["profile"])
+    mock_aioresponse.get(
+        f"{TEST_BASE_URL}/{TEST_USERNAME}/profile", payload=fixture_payloads["profile"]
+    )
     mock_aioresponse.get(
         f"{TEST_BASE_URL}/{TEST_USERNAME}/contest", payload=fixture_payloads["contest"]
     )
