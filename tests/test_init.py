@@ -37,7 +37,7 @@ async def test_setup_retries_on_api_error(
 ) -> None:
     """Transport failure during first refresh marks the entry as `SETUP_RETRY`."""
     mock_aioresponse.get(
-        f"{config_entry.data['base_url']}/{config_entry.data['username']}",
+        f"{config_entry.data['base_url']}/{config_entry.data['username']}/profile",
         status=500,
         repeat=True,
     )
@@ -54,7 +54,7 @@ async def test_setup_triggers_reauth_on_unknown_user(
 ) -> None:
     """A 404 during first refresh triggers the reauth flow."""
     mock_aioresponse.get(
-        f"{config_entry.data['base_url']}/{config_entry.data['username']}",
+        f"{config_entry.data['base_url']}/{config_entry.data['username']}/profile",
         status=404,
         repeat=True,
     )

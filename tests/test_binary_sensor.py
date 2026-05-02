@@ -71,7 +71,7 @@ async def test_streak_at_risk_on_when_late_and_no_submission(
     }
     base = "https://api.example.test"
     user = TEST_USERNAME
-    mock_aioresponse.get(f"{base}/{user}", payload=fixture_payloads["profile"], repeat=True)
+    mock_aioresponse.get(f"{base}/{user}/profile", payload=fixture_payloads["profile"], repeat=True)
     mock_aioresponse.get(f"{base}/{user}/contest", payload=fixture_payloads["contest"], repeat=True)
     mock_aioresponse.get(
         f"{base}/{user}/calendar", payload=fixture_payloads["calendar"], repeat=True
@@ -129,7 +129,7 @@ async def test_streak_at_risk_respects_options_warning_hour(
     }
     base = "https://api.example.test"
     user = TEST_USERNAME
-    mock_aioresponse.get(f"{base}/{user}", payload=fixture_payloads["profile"], repeat=True)
+    mock_aioresponse.get(f"{base}/{user}/profile", payload=fixture_payloads["profile"], repeat=True)
     mock_aioresponse.get(f"{base}/{user}/contest", payload=fixture_payloads["contest"], repeat=True)
     mock_aioresponse.get(
         f"{base}/{user}/calendar", payload=fixture_payloads["calendar"], repeat=True
@@ -175,7 +175,7 @@ async def test_streak_at_risk_off_when_streak_zero(
     """If there's no streak to defend, streak-at-risk is always off."""
     base = "https://api.example.test"
     user = TEST_USERNAME
-    mock_aioresponse.get(f"{base}/{user}", payload=fixture_payloads["profile"])
+    mock_aioresponse.get(f"{base}/{user}/profile", payload=fixture_payloads["profile"])
     mock_aioresponse.get(f"{base}/{user}/contest", payload=fixture_payloads["contest"])
     mock_aioresponse.get(f"{base}/{user}/calendar", payload={"submissionCalendar": {}})
     mock_aioresponse.get(

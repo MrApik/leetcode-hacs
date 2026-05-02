@@ -60,7 +60,7 @@ def stub_api(
 ) -> aioresponses:
     """Wire all API endpoints to canned responses for the happy path."""
     mock_aioresponse.get(
-        f"{TEST_BASE_URL}/{TEST_USERNAME}",
+        f"{TEST_BASE_URL}/{TEST_USERNAME}/profile",
         payload=fixture_payloads["profile"],
         repeat=True,
     )

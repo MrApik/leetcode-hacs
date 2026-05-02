@@ -223,11 +223,11 @@ class LeetCodeApiClient:
 
     async def async_validate(self) -> None:
         """Verify that the configured username exists on the upstream service."""
-        await self._get(f"/{self._username}")
+        await self._get(f"/{self._username}/profile")
 
     async def async_fetch_stats(self) -> UserStats:
         """Fetch and assemble all data needed to populate the integration's entities."""
-        profile = await self._get(f"/{self._username}")
+        profile = await self._get(f"/{self._username}/profile")
         contest = await self._get(f"/{self._username}/contest")
         calendar = await self._get(f"/{self._username}/calendar")
         ac_submission = await self._get(
@@ -257,7 +257,7 @@ class LeetCodeApiClient:
             medium_solved=int(profile.get("mediumSolved", 0) or 0),
             hard_solved=int(profile.get("hardSolved", 0) or 0),
             total_questions=int(profile.get("totalQuestions", 0) or 0),
-            acceptance_rate=_optional_float(profile.get("acceptanceRate")),
+            acceptance_rate=_compute_acceptance_rate(profile),
             ranking=_optional_int(profile.get("ranking")),
             contest_rating=_optional_float(contest.get("contestRating")),
             contest_global_ranking=_optional_int(contest.get("contestGlobalRanking")),
@@ -372,6 +372,27 @@ def _optional_float(value: Any) -> float | None:
         return float(value)
     except (TypeError, ValueError):
         return None
+
+
+def _compute_acceptance_rate(profile: dict[str, Any]) -> float | None:
+    """Derive acceptance rate from `matchedUserStats` (`/profile` doesn't expose it directly)."""
+    stats = profile.get("matchedUserStats") or {}
+    ac = stats.get("acSubmissionNum") or []
+    total = stats.get("totalSubmissionNum") or []
+    ac_all = next((entry for entry in ac if entry.get("difficulty") == "All"), None)
+    total_all = next(
+        (entry for entry in total if entry.get("difficulty") == "All"), None
+    )
+    if not ac_all or not total_all:
+        return None
+    try:
+        ac_count = int(ac_all.get("submissions", 0))
+        total_count = int(total_all.get("submissions", 0))
+    except (TypeError, ValueError):
+        return None
+    if total_count <= 0:
+        return None
+    return round(ac_count / total_count * 100, 2)
 
 
 def _parse_submission_calendar(raw: Any) -> tuple[tuple[date, int], ...]:

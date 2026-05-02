@@ -1,13 +1,27 @@
 {
-  "username": "leetcoder",
-  "name": "Leet Coder",
   "totalSolved": 423,
-  "easySolved": 215,
-  "mediumSolved": 178,
-  "hardSolved": 30,
   "totalQuestions": 3120,
-  "acceptanceRate": 67.3,
+  "easySolved": 215,
+  "totalEasy": 940,
+  "mediumSolved": 178,
+  "totalMedium": 2048,
+  "hardSolved": 30,
+  "totalHard": 928,
   "ranking": 14523,
+  "contributionPoint": 12,
   "reputation": 12,
-  "userAvatar": "https://leetcode.example/avatar.png"
+  "matchedUserStats": {
+    "acSubmissionNum": [
+      {"difficulty": "All", "count": 423, "submissions": 673},
+      {"difficulty": "Easy", "count": 215, "submissions": 250},
+      {"difficulty": "Medium", "count": 178, "submissions": 350},
+      {"difficulty": "Hard", "count": 30, "submissions": 73}
+    ],
+    "totalSubmissionNum": [
+      {"difficulty": "All", "count": 460, "submissions": 1000},
+      {"difficulty": "Easy", "count": 230, "submissions": 300},
+      {"difficulty": "Medium", "count": 195, "submissions": 480},
+      {"difficulty": "Hard", "count": 35, "submissions": 220}
+    ]
+  }
 }

@@ -48,7 +48,7 @@ async def test_user_flow_success(hass: HomeAssistant, stub_api: aioresponses) ->
 
 async def test_user_flow_unknown_user(hass: HomeAssistant, mock_aioresponse: aioresponses) -> None:
     """A 404 from the API surfaces the `unknown_user` error key."""
-    mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}", status=404)
+    mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}/profile", status=404)
     result = await _start_user_flow(hass, USER_INPUT)
 
     assert result["type"] is FlowResultType.FORM
@@ -57,7 +57,7 @@ async def test_user_flow_unknown_user(hass: HomeAssistant, mock_aioresponse: aio
 
 async def test_user_flow_rate_limited(hass: HomeAssistant, mock_aioresponse: aioresponses) -> None:
     """A 429 surfaces the `rate_limited` error key on the form base."""
-    mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}", status=429)
+    mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}/profile", status=429)
     result = await _start_user_flow(hass, USER_INPUT)
 
     assert result["type"] is FlowResultType.FORM
@@ -68,7 +68,7 @@ async def test_user_flow_cannot_connect(
     hass: HomeAssistant, mock_aioresponse: aioresponses
 ) -> None:
     """Other transport errors surface `cannot_connect`."""
-    mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}", status=500)
+    mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}/profile", status=500)
     result = await _start_user_flow(hass, USER_INPUT)
 
     assert result["type"] is FlowResultType.FORM
@@ -98,7 +98,7 @@ async def test_reauth_flow(
     assert result["step_id"] == "reauth_confirm"
 
     new_username = "newcoder"
-    stub_api.get(f"{TEST_BASE_URL}/{new_username}", payload={"username": new_username})
+    stub_api.get(f"{TEST_BASE_URL}/{new_username}/profile", payload={"username": new_username})
 
     with patch("custom_components.leetcode_hacs.async_setup_entry", return_value=True):
         result = await hass.config_entries.flow.async_configure(
@@ -121,7 +121,7 @@ async def test_reconfigure_flow(
 
     new_username = "newcoder"
     new_url = "https://self-hosted.example"
-    stub_api.get(f"{new_url}/{new_username}", payload={"username": new_username})
+    stub_api.get(f"{new_url}/{new_username}/profile", payload={"username": new_username})
 
     with patch("custom_components.leetcode_hacs.async_setup_entry", return_value=True):
         result = await hass.config_entries.flow.async_configure(

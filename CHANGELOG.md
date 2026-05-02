@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-05-02
+
+### Fixed
+
+- Easy / medium / hard / total-solved counts (and the headline sensor)
+  always read as zero. The integration was pulling these from the
+  `/<user>` endpoint, which returns only avatar / ranking metadata; the
+  counts live on `/<user>/profile`. The client now uses `/<user>/profile`
+  for both validation and refreshes, and acceptance rate is derived from
+  `matchedUserStats` since `/<user>/profile` doesn't expose it directly.
+
 ## [0.1.1] - 2026-05-02
 
 ### Fixed
@@ -28,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[Unreleased]: https://github.com/MrApik/leetcode-hacs/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/MrApik/leetcode-hacs/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/MrApik/leetcode-hacs/releases/tag/v0.1.2
 [0.1.1]: https://github.com/MrApik/leetcode-hacs/releases/tag/v0.1.1
 [0.1.0]: https://github.com/MrApik/leetcode-hacs/releases/tag/v0.1.0

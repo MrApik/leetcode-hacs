@@ -74,7 +74,7 @@ async def test_fetch_stats_tolerates_aux_endpoint_failures(
     mock_aioresponse: aioresponses, fixture_payloads: dict
 ) -> None:
     """A failing /skill endpoint must not break the whole refresh."""
-    mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}", payload=fixture_payloads["profile"])
+    mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}/profile", payload=fixture_payloads["profile"])
     mock_aioresponse.get(
         f"{TEST_BASE_URL}/{TEST_USERNAME}/contest", payload=fixture_payloads["contest"]
     )
@@ -104,7 +104,7 @@ async def test_fetch_stats_tolerates_aux_endpoint_failures(
 @pytest.mark.asyncio
 async def test_validate_404_raises_auth_error(mock_aioresponse: aioresponses) -> None:
     """A 404 from the username endpoint raises `LeetCodeAuthError`."""
-    mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}", status=404)
+    mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}/profile", status=404)
     async with ClientSession() as session:
         client = LeetCodeApiClient(session, base_url=TEST_BASE_URL, username=TEST_USERNAME)
         with pytest.raises(LeetCodeAuthError):
@@ -114,7 +114,7 @@ async def test_validate_404_raises_auth_error(mock_aioresponse: aioresponses) ->
 @pytest.mark.asyncio
 async def test_validate_429_raises_rate_limit(mock_aioresponse: aioresponses) -> None:
     """A 429 raises `LeetCodeRateLimitError`."""
-    mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}", status=429)
+    mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}/profile", status=429)
     async with ClientSession() as session:
         client = LeetCodeApiClient(session, base_url=TEST_BASE_URL, username=TEST_USERNAME)
         with pytest.raises(LeetCodeRateLimitError):
