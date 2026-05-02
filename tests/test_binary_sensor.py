@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import patch
 
 import pytest
 from aioresponses import aioresponses
+from custom_components.leetcode_hacs.const import CONF_STREAK_WARNING_HOUR
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
-
-from custom_components.leetcode_hacs.const import CONF_STREAK_WARNING_HOUR
 
 from .const import TEST_USERNAME
 
@@ -28,7 +27,7 @@ async def _setup(hass: HomeAssistant, config_entry: MockConfigEntry) -> None:
 
 async def test_daily_solved_on(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """The fixture has a submission for today's daily; the binary sensor is on."""
@@ -41,7 +40,7 @@ async def test_daily_solved_on(
 
 async def test_streak_at_risk_off_when_solved_today(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """If the user submitted today, streak-at-risk stays off regardless of hour."""
@@ -72,33 +71,37 @@ async def test_streak_at_risk_on_when_late_and_no_submission(
     }
     base = "https://api.example.test"
     user = TEST_USERNAME
-    mock_aioresponse.get(f"{base}/{user}", payload=fixture_payloads["profile"])
-    mock_aioresponse.get(f"{base}/{user}/contest", payload=fixture_payloads["contest"])
-    mock_aioresponse.get(f"{base}/{user}/calendar", payload=fixture_payloads["calendar"])
+    mock_aioresponse.get(f"{base}/{user}", payload=fixture_payloads["profile"], repeat=True)
+    mock_aioresponse.get(f"{base}/{user}/contest", payload=fixture_payloads["contest"], repeat=True)
     mock_aioresponse.get(
-        f"{base}/{user}/acSubmission?limit=10", payload=yesterday_payload
+        f"{base}/{user}/calendar", payload=fixture_payloads["calendar"], repeat=True
     )
-    mock_aioresponse.get(f"{base}/daily", payload=fixture_payloads["daily"])
-    mock_aioresponse.get(f"{base}/{user}/language", payload=fixture_payloads["language"])
-    mock_aioresponse.get(f"{base}/{user}/skill", payload=fixture_payloads["skill"])
     mock_aioresponse.get(
-        f"{base}/contests/upcoming", payload=fixture_payloads["upcoming_contests"]
+        f"{base}/{user}/acSubmission?limit=10", payload=yesterday_payload, repeat=True
+    )
+    mock_aioresponse.get(f"{base}/daily", payload=fixture_payloads["daily"], repeat=True)
+    mock_aioresponse.get(
+        f"{base}/{user}/language", payload=fixture_payloads["language"], repeat=True
+    )
+    mock_aioresponse.get(f"{base}/{user}/skill", payload=fixture_payloads["skill"], repeat=True)
+    mock_aioresponse.get(
+        f"{base}/contests/upcoming",
+        payload=fixture_payloads["upcoming_contests"],
+        repeat=True,
     )
 
     config_entry.add_to_hass(hass)
-    assert await hass.config_entries.async_setup(config_entry.entry_id)
-    await hass.async_block_till_done()
 
-    coordinator = config_entry.runtime_data.coordinator
-
-    # Pretend it is 21:00 local — past the default 20:00 warning hour.
-    late_now = datetime(2026, 4, 28, 21, 0, tzinfo=timezone.utc)
+    # Patch `dt_util.now` BEFORE the integration sets up so the binary
+    # sensor's first state evaluation sees the late-evening time.
+    # Once the state is cached, a subsequent `coordinator.async_refresh()`
+    # won't re-evaluate it (the coordinator runs with `always_update=False`).
+    late_now = datetime(2026, 4, 28, 21, 0, tzinfo=UTC)
     with patch(
         "custom_components.leetcode_hacs.binary_sensor.dt_util.now",
         return_value=late_now,
     ):
-        # Force a state write so `is_on` is re-evaluated.
-        await coordinator.async_refresh()
+        assert await hass.config_entries.async_setup(config_entry.entry_id)
         await hass.async_block_till_done()
         state = hass.states.get(STREAK_AT_RISK)
         assert state is not None
@@ -127,9 +130,7 @@ async def test_streak_at_risk_respects_options_warning_hour(
     base = "https://api.example.test"
     user = TEST_USERNAME
     mock_aioresponse.get(f"{base}/{user}", payload=fixture_payloads["profile"], repeat=True)
-    mock_aioresponse.get(
-        f"{base}/{user}/contest", payload=fixture_payloads["contest"], repeat=True
-    )
+    mock_aioresponse.get(f"{base}/{user}/contest", payload=fixture_payloads["contest"], repeat=True)
     mock_aioresponse.get(
         f"{base}/{user}/calendar", payload=fixture_payloads["calendar"], repeat=True
     )
@@ -140,9 +141,7 @@ async def test_streak_at_risk_respects_options_warning_hour(
     mock_aioresponse.get(
         f"{base}/{user}/language", payload=fixture_payloads["language"], repeat=True
     )
-    mock_aioresponse.get(
-        f"{base}/{user}/skill", payload=fixture_payloads["skill"], repeat=True
-    )
+    mock_aioresponse.get(f"{base}/{user}/skill", payload=fixture_payloads["skill"], repeat=True)
     mock_aioresponse.get(
         f"{base}/contests/upcoming",
         payload=fixture_payloads["upcoming_contests"],
@@ -150,14 +149,12 @@ async def test_streak_at_risk_respects_options_warning_hour(
     )
 
     config_entry.add_to_hass(hass)
-    hass.config_entries.async_update_entry(
-        config_entry, options={CONF_STREAK_WARNING_HOUR: 6}
-    )
+    hass.config_entries.async_update_entry(config_entry, options={CONF_STREAK_WARNING_HOUR: 6})
     assert await hass.config_entries.async_setup(config_entry.entry_id)
     await hass.async_block_till_done()
     coordinator = config_entry.runtime_data.coordinator
 
-    morning = datetime(2026, 4, 28, 7, 0, tzinfo=timezone.utc)  # past warning_hour=6
+    morning = datetime(2026, 4, 28, 7, 0, tzinfo=UTC)  # past warning_hour=6
     with patch(
         "custom_components.leetcode_hacs.binary_sensor.dt_util.now",
         return_value=morning,
@@ -180,18 +177,14 @@ async def test_streak_at_risk_off_when_streak_zero(
     user = TEST_USERNAME
     mock_aioresponse.get(f"{base}/{user}", payload=fixture_payloads["profile"])
     mock_aioresponse.get(f"{base}/{user}/contest", payload=fixture_payloads["contest"])
-    mock_aioresponse.get(
-        f"{base}/{user}/calendar", payload={"submissionCalendar": {}}
-    )
+    mock_aioresponse.get(f"{base}/{user}/calendar", payload={"submissionCalendar": {}})
     mock_aioresponse.get(
         f"{base}/{user}/acSubmission?limit=10", payload={"count": 0, "submission": []}
     )
     mock_aioresponse.get(f"{base}/daily", payload=fixture_payloads["daily"])
     mock_aioresponse.get(f"{base}/{user}/language", payload=fixture_payloads["language"])
     mock_aioresponse.get(f"{base}/{user}/skill", payload=fixture_payloads["skill"])
-    mock_aioresponse.get(
-        f"{base}/contests/upcoming", payload=fixture_payloads["upcoming_contests"]
-    )
+    mock_aioresponse.get(f"{base}/contests/upcoming", payload=fixture_payloads["upcoming_contests"])
 
     config_entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(config_entry.entry_id)

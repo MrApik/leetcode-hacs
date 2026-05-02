@@ -19,7 +19,6 @@ if TYPE_CHECKING:
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
     from . import LeetCodeConfigEntry
-    from .coordinator import LeetCodeDataUpdateCoordinator
 
 PARALLEL_UPDATES = 0  # Coordinator pushes data; entity updates make no HTTP calls.
 
@@ -109,8 +108,6 @@ class LeetCodeStreakAtRiskBinarySensor(LeetCodeUserEntity, BinarySensorEntity):
         )
         return {
             "current_streak": s.current_streak,
-            "last_submission": (
-                s.last_submission.isoformat() if s.last_submission else None
-            ),
+            "last_submission": (s.last_submission.isoformat() if s.last_submission else None),
             "warning_hour": int(warning_hour),
         }

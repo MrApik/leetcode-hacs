@@ -4,19 +4,18 @@ from __future__ import annotations
 
 import pytest
 from aioresponses import aioresponses
-from homeassistant.core import HomeAssistant
-from pytest_homeassistant_custom_component.common import MockConfigEntry
-
 from custom_components.leetcode_hacs.diagnostics import (
     async_get_config_entry_diagnostics,
 )
+from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 pytestmark = pytest.mark.asyncio
 
 
 async def test_diagnostics_redacts_username(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """The username field in entry data is redacted."""

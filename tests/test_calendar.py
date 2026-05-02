@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime
 
 import pytest
 from aioresponses import aioresponses
@@ -25,7 +25,7 @@ async def _setup(hass: HomeAssistant, config_entry: MockConfigEntry) -> None:
 
 async def test_contests_calendar_state(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """The contests calendar surfaces the next upcoming contest."""
@@ -38,13 +38,13 @@ async def test_contests_calendar_state(
 
 async def test_contests_calendar_get_events(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """Querying the contests calendar returns all upcoming contests in window."""
     await _setup(hass, config_entry)
-    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
-    end = datetime(2026, 12, 31, tzinfo=timezone.utc)
+    start = datetime(2026, 1, 1, tzinfo=UTC)
+    end = datetime(2026, 12, 31, tzinfo=UTC)
     events = await hass.services.async_call(
         "calendar",
         "get_events",
@@ -59,7 +59,7 @@ async def test_contests_calendar_get_events(
 
 async def test_submissions_calendar_state(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """The submissions calendar surfaces today's activity if any."""
@@ -68,3 +68,26 @@ async def test_submissions_calendar_state(
     assert state is not None
     # Today (2026-04-28) has 1 submission in the fixture calendar.
     assert "1 submission" in state.attributes.get("message", "")
+
+
+async def test_submissions_calendar_get_events(
+    hass: HomeAssistant,
+    stub_api: aioresponses,
+    config_entry: MockConfigEntry,
+) -> None:
+    """Querying the submissions calendar returns one all-day event per active day."""
+    await _setup(hass, config_entry)
+    start = datetime(2026, 4, 1, tzinfo=UTC)
+    end = datetime(2026, 5, 31, tzinfo=UTC)
+    response = await hass.services.async_call(
+        "calendar",
+        "get_events",
+        {"entity_id": SUBMISSIONS, "start_date_time": start, "end_date_time": end},
+        blocking=True,
+        return_response=True,
+    )
+    events = response[SUBMISSIONS]["events"]
+    # Fixture calendar.json has 4 active days (Apr 25 – Apr 28).
+    assert len(events) == 4
+    summaries = {event["summary"] for event in events}
+    assert {"1 submission", "2 submissions", "3 submissions", "5 submissions"} == summaries

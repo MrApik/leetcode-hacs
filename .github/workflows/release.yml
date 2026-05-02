@@ -12,7 +12,7 @@ jobs:
     name: Package release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Verify manifest version matches release tag
         env:
@@ -31,6 +31,6 @@ jobs:
           zip ../../leetcode_hacs.zip -r ./
 
       - name: Attach zip to GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: leetcode_hacs.zip

@@ -23,9 +23,7 @@ class _LeetCodeEntity(CoordinatorEntity[LeetCodeDataUpdateCoordinator]):
         """Wire up coordinator subscription and a per-username unique-id."""
         super().__init__(coordinator)
         self.entity_description = entity_description
-        self._attr_unique_id = (
-            f"{coordinator.client.username}_{entity_description.key}"
-        )
+        self._attr_unique_id = f"{coordinator.client.username}_{entity_description.key}"
 
     @property
     def available(self) -> bool:

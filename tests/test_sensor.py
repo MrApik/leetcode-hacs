@@ -43,7 +43,7 @@ async def _setup(hass: HomeAssistant, config_entry: MockConfigEntry) -> None:
 )
 async def test_sensor_values(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
     entity_id: str,
     expected_state: str,
@@ -57,7 +57,7 @@ async def test_sensor_values(
 
 async def test_headline_sensor_attributes(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """The headline sensor exposes consolidated user metrics as attributes."""
@@ -77,7 +77,7 @@ async def test_headline_sensor_attributes(
 
 async def test_recent_submissions_attributes(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """`recent_submissions` exposes the full list of accepted submissions as attributes."""
@@ -95,7 +95,7 @@ async def test_recent_submissions_attributes(
 
 async def test_top_language_breakdown(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """The top-language sensor exposes the per-language breakdown."""
@@ -110,7 +110,7 @@ async def test_top_language_breakdown(
 
 async def test_top_skill_breakdown(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """The top-skill sensor exposes the breakdown grouped by tier."""
@@ -125,7 +125,7 @@ async def test_top_skill_breakdown(
 
 async def test_daily_challenge_sensor(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """The daily challenge sensor exposes the full LeetCode metadata."""

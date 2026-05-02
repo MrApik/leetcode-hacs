@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, time, timedelta, timezone
+from datetime import UTC, date, datetime, time, timedelta
 from typing import TYPE_CHECKING
 
 from homeassistant.components.calendar import (
@@ -98,7 +98,7 @@ class LeetCodeSubmissionsCalendar(LeetCodeUserEntity, CalendarEntity):
         calendar = self.coordinator.data.submission_calendar
         if not calendar:
             return None
-        today = datetime.now(tz=timezone.utc).date()
+        today = datetime.now(tz=UTC).date()
         # Prefer today; otherwise the most recent past day with submissions.
         for day, count in reversed(calendar):
             if day <= today:
@@ -115,8 +115,8 @@ class LeetCodeSubmissionsCalendar(LeetCodeUserEntity, CalendarEntity):
         username = self.coordinator.client.username
         events: list[CalendarEvent] = []
         for day, count in self.coordinator.data.submission_calendar:
-            day_start = datetime.combine(day, time.min, tzinfo=timezone.utc)
-            day_end = datetime.combine(day, time.max, tzinfo=timezone.utc)
+            day_start = datetime.combine(day, time.min, tzinfo=UTC)
+            day_end = datetime.combine(day, time.max, tzinfo=UTC)
             if day_end < start_date or day_start > end_date:
                 continue
             events.append(_day_to_event(day, count, username))
@@ -138,7 +138,7 @@ def _contest_to_event(contest: ContestEvent) -> CalendarEvent:
     )
 
 
-def _day_to_event(day, count: int, username: str) -> CalendarEvent:
+def _day_to_event(day: date, count: int, username: str) -> CalendarEvent:
     """Build an all-day calendar event for a single day's submission summary."""
     label = "submission" if count == 1 else "submissions"
     return CalendarEvent(

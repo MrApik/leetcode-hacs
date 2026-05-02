@@ -8,13 +8,12 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from aioresponses import aioresponses
-from homeassistant.core import HomeAssistant
-from pytest_homeassistant_custom_component.common import MockConfigEntry
-
 from custom_components.leetcode_hacs.const import (
     EVENT_PROBLEM_SOLVED,
     EVENT_STREAK_MILESTONE,
 )
+from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 pytestmark = pytest.mark.asyncio
 
@@ -27,7 +26,7 @@ async def _setup(hass: HomeAssistant, config_entry: MockConfigEntry) -> None:
 
 async def test_problem_solved_event_fires_on_increase(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """When `total_solved` goes up between refreshes, the event fires once."""
@@ -39,9 +38,7 @@ async def test_problem_solved_event_fires_on_increase(
     events: list[Any] = []
     hass.bus.async_listen(EVENT_PROBLEM_SOLVED, lambda e: events.append(e.data))
 
-    with patch.object(
-        coordinator.client, "async_fetch_stats", new=AsyncMock(return_value=bumped)
-    ):
+    with patch.object(coordinator.client, "async_fetch_stats", new=AsyncMock(return_value=bumped)):
         await coordinator.async_refresh()
     await hass.async_block_till_done()
 
@@ -54,7 +51,7 @@ async def test_problem_solved_event_fires_on_increase(
 
 async def test_problem_solved_event_does_not_fire_on_first_refresh(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """The first coordinator refresh sets baselines silently — no event."""
@@ -66,7 +63,7 @@ async def test_problem_solved_event_does_not_fire_on_first_refresh(
 
 async def test_streak_milestone_event_fires_when_crossing_threshold(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """The streak_milestone event fires when crossing 7 / 30 / 100 / 365 days."""
@@ -79,9 +76,7 @@ async def test_streak_milestone_event_fires_when_crossing_threshold(
     events: list[Any] = []
     hass.bus.async_listen(EVENT_STREAK_MILESTONE, lambda e: events.append(e.data))
 
-    with patch.object(
-        coordinator.client, "async_fetch_stats", new=AsyncMock(return_value=bumped)
-    ):
+    with patch.object(coordinator.client, "async_fetch_stats", new=AsyncMock(return_value=bumped)):
         await coordinator.async_refresh()
     await hass.async_block_till_done()
 
@@ -92,7 +87,7 @@ async def test_streak_milestone_event_fires_when_crossing_threshold(
 
 async def test_streak_milestone_event_fires_for_each_crossed_milestone(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """Jumping from below-7 to above-30 fires both 7 and 30 events."""
@@ -104,9 +99,7 @@ async def test_streak_milestone_event_fires_for_each_crossed_milestone(
     events: list[Any] = []
     hass.bus.async_listen(EVENT_STREAK_MILESTONE, lambda e: events.append(e.data))
 
-    with patch.object(
-        coordinator.client, "async_fetch_stats", new=AsyncMock(return_value=bumped)
-    ):
+    with patch.object(coordinator.client, "async_fetch_stats", new=AsyncMock(return_value=bumped)):
         await coordinator.async_refresh()
     await hass.async_block_till_done()
 

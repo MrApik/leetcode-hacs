@@ -4,19 +4,18 @@ from __future__ import annotations
 
 import json
 from collections.abc import Generator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import pytest
 from aioresponses import aioresponses
-from pytest_homeassistant_custom_component.common import MockConfigEntry
-
 from custom_components.leetcode_hacs.const import (
     CONF_BASE_URL,
     CONF_USERNAME,
     DOMAIN,
 )
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from .const import TEST_BASE_URL, TEST_USERNAME
 
@@ -33,7 +32,7 @@ def auto_enable_custom_integrations(enable_custom_integrations: None) -> None:
 
 
 @pytest.fixture
-def mock_aioresponse() -> Generator[aioresponses, None, None]:
+def mock_aioresponse() -> Generator[aioresponses]:
     """Patch aiohttp transport with deterministic responses."""
     with aioresponses() as mocked:
         yield mocked
@@ -128,7 +127,7 @@ def freeze_today(monkeypatch: pytest.MonkeyPatch) -> datetime:
     moment in UTC. Individual tests may further patch the latter to simulate
     "later in the day".
     """
-    fixed = datetime(2026, 4, 28, 12, 0, tzinfo=timezone.utc)
+    fixed = datetime(2026, 4, 28, 12, 0, tzinfo=UTC)
 
     class _FixedDatetime(datetime):
         @classmethod
@@ -136,7 +135,5 @@ def freeze_today(monkeypatch: pytest.MonkeyPatch) -> datetime:
             return fixed if tz is None else fixed.astimezone(tz)
 
     monkeypatch.setattr("custom_components.leetcode_hacs.api.datetime", _FixedDatetime)
-    monkeypatch.setattr(
-        "custom_components.leetcode_hacs.binary_sensor.dt_util.now", lambda: fixed
-    )
+    monkeypatch.setattr("custom_components.leetcode_hacs.binary_sensor.dt_util.now", lambda: fixed)
     return fixed

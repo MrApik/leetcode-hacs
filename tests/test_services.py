@@ -6,15 +6,15 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from aioresponses import aioresponses
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ServiceValidationError
-from pytest_homeassistant_custom_component.common import MockConfigEntry
-
+from custom_components.leetcode_hacs import _async_register_services
 from custom_components.leetcode_hacs.const import (
     DOMAIN,
     SERVICE_FETCH_PROBLEM,
     SERVICE_REFRESH,
 )
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 pytestmark = pytest.mark.asyncio
 
@@ -27,32 +27,28 @@ async def _setup(hass: HomeAssistant, config_entry: MockConfigEntry) -> None:
 
 async def test_refresh_service_targets_all_entries(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """Calling the action with no `entry_id` refreshes every configured profile."""
     await _setup(hass, config_entry)
     coordinator = config_entry.runtime_data.coordinator
 
-    with patch.object(
-        coordinator, "async_request_refresh", new=AsyncMock()
-    ) as mock_refresh:
+    with patch.object(coordinator, "async_request_refresh", new=AsyncMock()) as mock_refresh:
         await hass.services.async_call(DOMAIN, SERVICE_REFRESH, {}, blocking=True)
     mock_refresh.assert_awaited_once()
 
 
 async def test_refresh_service_targets_single_entry(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """Passing `entry_id` refreshes only that profile."""
     await _setup(hass, config_entry)
     coordinator = config_entry.runtime_data.coordinator
 
-    with patch.object(
-        coordinator, "async_request_refresh", new=AsyncMock()
-    ) as mock_refresh:
+    with patch.object(coordinator, "async_request_refresh", new=AsyncMock()) as mock_refresh:
         await hass.services.async_call(
             DOMAIN,
             SERVICE_REFRESH,
@@ -64,16 +60,14 @@ async def test_refresh_service_targets_single_entry(
 
 async def test_refresh_service_ignores_unknown_entry_id(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """An unknown `entry_id` is silently ignored — no entries to refresh."""
     await _setup(hass, config_entry)
     coordinator = config_entry.runtime_data.coordinator
 
-    with patch.object(
-        coordinator, "async_request_refresh", new=AsyncMock()
-    ) as mock_refresh:
+    with patch.object(coordinator, "async_request_refresh", new=AsyncMock()) as mock_refresh:
         await hass.services.async_call(
             DOMAIN,
             SERVICE_REFRESH,
@@ -85,7 +79,7 @@ async def test_refresh_service_ignores_unknown_entry_id(
 
 async def test_fetch_problem_service_returns_metadata(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """The `fetch_problem` service returns problem metadata as a service response."""
@@ -112,8 +106,6 @@ async def test_fetch_problem_without_configured_entry(
     """Calling `fetch_problem` with no configured profile raises ServiceValidationError."""
     # Force-register the integration without setting up an entry, so the service
     # has to look up entries and find none.
-    from custom_components.leetcode_hacs import _async_register_services
-
     _async_register_services(hass)
     with pytest.raises(ServiceValidationError):
         await hass.services.async_call(

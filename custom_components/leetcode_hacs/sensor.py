@@ -118,8 +118,7 @@ async def async_setup_entry(
         LeetCodeTopSkillSensor(coordinator),
     ]
     entities.extend(
-        LeetCodeBreakdownSensor(coordinator, description)
-        for description in USER_BREAKDOWN_SENSORS
+        LeetCodeBreakdownSensor(coordinator, description) for description in USER_BREAKDOWN_SENSORS
     )
     async_add_entities(entities)
 
@@ -170,9 +169,7 @@ class LeetCodeHeadlineSensor(LeetCodeUserEntity, SensorEntity):
             "contests_attended": s.contests_attended,
             "top_percentage": s.top_percentage,
             "current_streak": s.current_streak,
-            "last_submission": (
-                s.last_submission.isoformat() if s.last_submission else None
-            ),
+            "last_submission": (s.last_submission.isoformat() if s.last_submission else None),
         }
 
 
@@ -225,8 +222,7 @@ class LeetCodeTopLanguageSensor(LeetCodeUserEntity, SensorEntity):
         languages = self.coordinator.data.languages
         return {
             "languages": [
-                {"name": lang.name, "problems_solved": lang.problems_solved}
-                for lang in languages
+                {"name": lang.name, "problems_solved": lang.problems_solved} for lang in languages
             ]
         }
 

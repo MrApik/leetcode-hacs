@@ -5,11 +5,11 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from http import HTTPStatus
 from typing import Any, Self
 
-from aiohttp import ClientError, ClientResponseError, ClientSession
+from aiohttp import ClientError, ClientResponseError, ClientSession, ClientTimeout
 from yarl import URL
 
 from .const import REQUEST_TIMEOUT
@@ -59,11 +59,7 @@ class DailyChallenge:
             link = f"https://leetcode.com/problems/{title_slug}/"
 
         raw_tags = payload.get("topicTags") or []
-        tags = tuple(
-            str(t["name"])
-            for t in raw_tags
-            if isinstance(t, dict) and t.get("name")
-        )
+        tags = tuple(str(t["name"]) for t in raw_tags if isinstance(t, dict) and t.get("name"))
 
         return cls(
             date=str(payload.get("date", "")),
@@ -194,12 +190,16 @@ class UserStats:
     @property
     def top_language(self) -> LanguageStat | None:
         """Return the language with the most problems solved (or `None`)."""
-        return max(self.languages, key=lambda lang: lang.problems_solved, default=None)
+        if not self.languages:
+            return None
+        return max(self.languages, key=lambda lang: lang.problems_solved)
 
     @property
     def top_skill(self) -> SkillStat | None:
         """Return the topic tag with the most problems solved (or `None`)."""
-        return max(self.skills, key=lambda skill: skill.problems_solved, default=None)
+        if not self.skills:
+            return None
+        return max(self.skills, key=lambda skill: skill.problems_solved)
 
 
 class LeetCodeApiClient:
@@ -292,11 +292,7 @@ class LeetCodeApiClient:
         if not link:
             link = f"https://leetcode.com/problems/{title_slug_resp}/"
         raw_tags = payload.get("topicTags") or []
-        tags = tuple(
-            str(t["name"])
-            for t in raw_tags
-            if isinstance(t, dict) and t.get("name")
-        )
+        tags = tuple(str(t["name"]) for t in raw_tags if isinstance(t, dict) and t.get("name"))
         raw_hints = payload.get("hints") or []
         hints = tuple(str(h) for h in raw_hints if h)
         return ProblemDetail(
@@ -321,10 +317,14 @@ class LeetCodeApiClient:
             return None
 
     async def _get(self, path: str, **params: Any) -> dict[str, Any]:
-        url = self._base_url.with_path(self._base_url.path + path)
+        # Strip trailing `/` from the base path and ensure the suffix starts with one,
+        # so a host-only base URL (whose `.path` is `/`) does not produce `//foo`.
+        base_path = self._base_url.path.rstrip("/")
+        suffix = path if path.startswith("/") else f"/{path}"
+        url = self._base_url.with_path(f"{base_path}{suffix}")
         try:
             async with self._session.get(
-                url, params=params or None, timeout=REQUEST_TIMEOUT
+                url, params=params or None, timeout=ClientTimeout(total=REQUEST_TIMEOUT)
             ) as response:
                 if response.status == HTTPStatus.NOT_FOUND:
                     raise LeetCodeAuthError(f"User '{self._username}' not found")
@@ -343,14 +343,11 @@ class LeetCodeApiClient:
             raise LeetCodeApiError(f"Network error contacting {url}") from err
 
         if isinstance(payload, dict) and (
-            payload.get("errors") or payload.get("error")
+            payload.get("errors")
+            or payload.get("error")
             or payload.get("message") == "User not found"
         ):
-            message = (
-                payload.get("error")
-                or payload.get("message")
-                or payload.get("errors")
-            )
+            message = payload.get("error") or payload.get("message") or payload.get("errors")
             raise LeetCodeAuthError(str(message))
         if not isinstance(payload, dict):
             raise LeetCodeApiError(
@@ -397,7 +394,7 @@ def _parse_submission_calendar(raw: Any) -> tuple[tuple[date, int], ...]:
             continue
         if count_int <= 0:
             continue
-        day = datetime.fromtimestamp(seconds, tz=timezone.utc).date()
+        day = datetime.fromtimestamp(seconds, tz=UTC).date()
         parsed.append((day, count_int))
     parsed.sort(key=lambda item: item[0])
     return tuple(parsed)
@@ -408,7 +405,7 @@ def _calculate_streak(calendar: tuple[tuple[date, int], ...]) -> int:
     if not calendar:
         return 0
     days = {day for day, _ in calendar}
-    today = datetime.now(tz=timezone.utc).date()
+    today = datetime.now(tz=UTC).date()
     streak = 0
     cursor = today
     while cursor in days:
@@ -430,15 +427,18 @@ def _extract_recent_submissions(payload: dict[str, Any]) -> tuple[RecentSubmissi
     for entry in submissions:
         if not isinstance(entry, dict):
             continue
+        ts_raw = entry.get("timestamp")
+        if ts_raw is None:
+            continue
         try:
-            seconds = int(entry.get("timestamp"))
+            seconds = int(ts_raw)
         except (TypeError, ValueError):
             continue
         out.append(
             RecentSubmission(
                 title=str(entry.get("title", "")),
                 title_slug=str(entry.get("titleSlug", "")),
-                timestamp=datetime.fromtimestamp(seconds, tz=timezone.utc),
+                timestamp=datetime.fromtimestamp(seconds, tz=UTC),
                 language=str(entry.get("lang", "")),
                 status=str(entry.get("statusDisplay", "")),
             )
@@ -446,16 +446,13 @@ def _extract_recent_submissions(payload: dict[str, Any]) -> tuple[RecentSubmissi
     return tuple(out)
 
 
-def _solved_today(
-    submissions: tuple[RecentSubmission, ...], daily: DailyChallenge
-) -> bool:
-    """True iff one of `submissions` matches today's daily challenge slug, today UTC."""
+def _solved_today(submissions: tuple[RecentSubmission, ...], daily: DailyChallenge) -> bool:
+    """Return whether any of `submissions` matches today's daily challenge slug (UTC)."""
     if not daily.title_slug:
         return False
-    today = datetime.now(tz=timezone.utc).date()
+    today = datetime.now(tz=UTC).date()
     return any(
-        s.title_slug == daily.title_slug and s.timestamp.date() == today
-        for s in submissions
+        s.title_slug == daily.title_slug and s.timestamp.date() == today for s in submissions
     )
 
 
@@ -490,9 +487,7 @@ def _extract_skills(payload: dict[str, Any]) -> tuple[SkillStat, ...]:
                 count = int(entry.get("problemsSolved", 0))
             except (TypeError, ValueError):
                 count = 0
-            out.append(
-                SkillStat(name=name, slug=slug, problems_solved=count, tier=tier)
-            )
+            out.append(SkillStat(name=name, slug=slug, problems_solved=count, tier=tier))
     return tuple(out)
 
 
@@ -502,16 +497,20 @@ def _extract_contests(payload: dict[str, Any]) -> tuple[ContestEvent, ...]:
     for entry in raw:
         if not isinstance(entry, dict):
             continue
+        start_raw = entry.get("startTime")
+        duration_raw = entry.get("duration")
+        if start_raw is None or duration_raw is None:
+            continue
         try:
-            start = int(entry.get("startTime"))
-            duration = int(entry.get("duration"))
+            start = int(start_raw)
+            duration = int(duration_raw)
         except (TypeError, ValueError):
             continue
         out.append(
             ContestEvent(
                 title=str(entry.get("title", "")),
                 title_slug=str(entry.get("titleSlug", "")),
-                start_time=datetime.fromtimestamp(start, tz=timezone.utc),
+                start_time=datetime.fromtimestamp(start, tz=UTC),
                 duration_seconds=duration,
                 is_virtual=bool(entry.get("isVirtual", False)),
                 contains_premium=bool(entry.get("containsPremium", False)),

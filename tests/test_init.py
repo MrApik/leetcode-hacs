@@ -13,7 +13,7 @@ pytestmark = pytest.mark.asyncio
 
 async def test_setup_and_unload(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001 — provides background HTTP fixtures.
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """The integration sets up cleanly and unloads cleanly."""

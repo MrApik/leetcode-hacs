@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import json
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import pytest
 from aiohttp import ClientSession
 from aioresponses import aioresponses
-
 from custom_components.leetcode_hacs.api import (
     DailyChallenge,
     LeetCodeApiClient,
@@ -21,8 +20,6 @@ from custom_components.leetcode_hacs.api import (
 )
 
 from .const import TEST_BASE_URL, TEST_USERNAME
-
-pytestmark = pytest.mark.asyncio
 
 
 def _daily(slug: str = "two-sum") -> DailyChallenge:
@@ -42,13 +39,14 @@ def _submission(slug: str, ts: int, *, lang: str = "python3") -> RecentSubmissio
     return RecentSubmission(
         title=slug.replace("-", " ").title(),
         title_slug=slug,
-        timestamp=datetime.fromtimestamp(ts, tz=timezone.utc),
+        timestamp=datetime.fromtimestamp(ts, tz=UTC),
         language=lang,
         status="Accepted",
     )
 
 
-async def test_fetch_stats_round_trip(stub_api: aioresponses) -> None:  # noqa: ARG001
+@pytest.mark.asyncio
+async def test_fetch_stats_round_trip(stub_api: aioresponses) -> None:
     """`async_fetch_stats` aggregates all endpoints into a `UserStats`."""
     async with ClientSession() as session:
         client = LeetCodeApiClient(session, base_url=TEST_BASE_URL, username=TEST_USERNAME)
@@ -71,6 +69,7 @@ async def test_fetch_stats_round_trip(stub_api: aioresponses) -> None:  # noqa: 
     assert stats.upcoming_contests[0].start_time < stats.upcoming_contests[1].start_time
 
 
+@pytest.mark.asyncio
 async def test_fetch_stats_tolerates_aux_endpoint_failures(
     mock_aioresponse: aioresponses, fixture_payloads: dict
 ) -> None:
@@ -102,6 +101,7 @@ async def test_fetch_stats_tolerates_aux_endpoint_failures(
     assert stats.total_solved == 423
 
 
+@pytest.mark.asyncio
 async def test_validate_404_raises_auth_error(mock_aioresponse: aioresponses) -> None:
     """A 404 from the username endpoint raises `LeetCodeAuthError`."""
     mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}", status=404)
@@ -111,6 +111,7 @@ async def test_validate_404_raises_auth_error(mock_aioresponse: aioresponses) ->
             await client.async_validate()
 
 
+@pytest.mark.asyncio
 async def test_validate_429_raises_rate_limit(mock_aioresponse: aioresponses) -> None:
     """A 429 raises `LeetCodeRateLimitError`."""
     mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}", status=429)
@@ -120,7 +121,8 @@ async def test_validate_429_raises_rate_limit(mock_aioresponse: aioresponses) ->
             await client.async_validate()
 
 
-async def test_async_fetch_problem(stub_api: aioresponses) -> None:  # noqa: ARG001
+@pytest.mark.asyncio
+async def test_async_fetch_problem(stub_api: aioresponses) -> None:
     """`async_fetch_problem` parses /select responses correctly."""
     async with ClientSession() as session:
         client = LeetCodeApiClient(session, base_url=TEST_BASE_URL, username=TEST_USERNAME)
@@ -179,21 +181,21 @@ def test_calculate_streak_empty() -> None:
     assert _calculate_streak(()) == 0
 
 
-def test_solved_today_no_match(freeze_today: datetime) -> None:  # noqa: ARG001
+def test_solved_today_no_match(freeze_today: datetime) -> None:
     """A submission for a different problem on a different slug does not count."""
     daily = _daily(slug="some-other-problem")
     submissions = (_submission("two-sum", 1777334400),)
     assert _solved_today(submissions, daily) is False
 
 
-def test_solved_today_match(freeze_today: datetime) -> None:  # noqa: ARG001
+def test_solved_today_match(freeze_today: datetime) -> None:
     """A submission for today's daily on today's date counts as solved."""
     daily = _daily(slug="two-sum")
     submissions = (_submission("two-sum", 1777334400),)
     assert _solved_today(submissions, daily) is True
 
 
-def test_solved_today_wrong_day(freeze_today: datetime) -> None:  # noqa: ARG001
+def test_solved_today_wrong_day(freeze_today: datetime) -> None:
     """A matching slug submitted on a different day does NOT count as solved."""
     daily = _daily(slug="two-sum")
     yesterday_ts = 1777248000

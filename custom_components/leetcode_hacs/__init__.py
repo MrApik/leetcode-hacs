@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
@@ -28,6 +28,8 @@ from .const import (
 from .coordinator import LeetCodeDataUpdateCoordinator
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Coroutine
+
     from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse
 
 PLATFORMS: list[Platform] = [
@@ -110,7 +112,9 @@ def _async_register_services(hass: HomeAssistant) -> None:
         )
 
 
-def _make_refresh_handler(hass: HomeAssistant):
+def _make_refresh_handler(
+    hass: HomeAssistant,
+) -> Callable[[ServiceCall], Coroutine[Any, Any, None]]:
     """Build the `refresh` service handler bound to `hass`."""
 
     async def _async_refresh(call: ServiceCall) -> None:
@@ -129,7 +133,9 @@ def _make_refresh_handler(hass: HomeAssistant):
     return _async_refresh
 
 
-def _make_fetch_problem_handler(hass: HomeAssistant):
+def _make_fetch_problem_handler(
+    hass: HomeAssistant,
+) -> Callable[[ServiceCall], Coroutine[Any, Any, ServiceResponse]]:
     """Build the `fetch_problem` service handler bound to `hass`."""
 
     async def _async_fetch_problem(call: ServiceCall) -> ServiceResponse:
@@ -146,7 +152,7 @@ def _make_fetch_problem_handler(hass: HomeAssistant):
                     problem = await data.client.async_fetch_problem(call.data["title_slug"])
                 except LeetCodeApiError as err:
                     raise HomeAssistantError(str(err)) from err
-                return problem.to_dict()
+                return cast("ServiceResponse", problem.to_dict())
         raise HomeAssistantError("No active LeetCode client available.")
 
     return _async_fetch_problem

@@ -7,26 +7,23 @@ from unittest.mock import patch
 
 import pytest
 from aioresponses import aioresponses
+from custom_components.leetcode_hacs.const import (
+    CONF_BASE_URL,
+    CONF_SCAN_INTERVAL,
+    DOMAIN,
+)
 from homeassistant import config_entries
 from homeassistant.const import CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.leetcode_hacs.const import (
-    CONF_BASE_URL,
-    CONF_SCAN_INTERVAL,
-    DOMAIN,
-)
-
 from .const import TEST_BASE_URL, TEST_USERNAME, USER_INPUT
 
 pytestmark = pytest.mark.asyncio
 
 
-async def _start_user_flow(
-    hass: HomeAssistant, user_input: dict[str, Any] | None = None
-) -> Any:
+async def _start_user_flow(hass: HomeAssistant, user_input: dict[str, Any] | None = None) -> Any:
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -36,9 +33,7 @@ async def _start_user_flow(
     return await hass.config_entries.flow.async_configure(result["flow_id"], user_input)
 
 
-async def test_user_flow_success(
-    hass: HomeAssistant, stub_api: aioresponses
-) -> None:
+async def test_user_flow_success(hass: HomeAssistant, stub_api: aioresponses) -> None:
     """A valid username + base URL produces a config entry."""
     with patch(
         "custom_components.leetcode_hacs.async_setup_entry", return_value=True
@@ -51,9 +46,7 @@ async def test_user_flow_success(
     mock_setup.assert_awaited_once()
 
 
-async def test_user_flow_unknown_user(
-    hass: HomeAssistant, mock_aioresponse: aioresponses
-) -> None:
+async def test_user_flow_unknown_user(hass: HomeAssistant, mock_aioresponse: aioresponses) -> None:
     """A 404 from the API surfaces the `unknown_user` error key."""
     mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}", status=404)
     result = await _start_user_flow(hass, USER_INPUT)
@@ -62,9 +55,7 @@ async def test_user_flow_unknown_user(
     assert result["errors"] == {CONF_USERNAME: "unknown_user"}
 
 
-async def test_user_flow_rate_limited(
-    hass: HomeAssistant, mock_aioresponse: aioresponses
-) -> None:
+async def test_user_flow_rate_limited(hass: HomeAssistant, mock_aioresponse: aioresponses) -> None:
     """A 429 surfaces the `rate_limited` error key on the form base."""
     mock_aioresponse.get(f"{TEST_BASE_URL}/{TEST_USERNAME}", status=429)
     result = await _start_user_flow(hass, USER_INPUT)
@@ -86,7 +77,7 @@ async def test_user_flow_cannot_connect(
 
 async def test_user_flow_duplicate_aborts(
     hass: HomeAssistant,
-    stub_api: aioresponses,  # noqa: ARG001 — fixture is used for side-effects.
+    stub_api: aioresponses,
     config_entry: MockConfigEntry,
 ) -> None:
     """Adding the same profile twice aborts via the unique-id check."""
@@ -109,9 +100,7 @@ async def test_reauth_flow(
     new_username = "newcoder"
     stub_api.get(f"{TEST_BASE_URL}/{new_username}", payload={"username": new_username})
 
-    with patch(
-        "custom_components.leetcode_hacs.async_setup_entry", return_value=True
-    ):
+    with patch("custom_components.leetcode_hacs.async_setup_entry", return_value=True):
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], {CONF_USERNAME: new_username}
         )
@@ -134,9 +123,7 @@ async def test_reconfigure_flow(
     new_url = "https://self-hosted.example"
     stub_api.get(f"{new_url}/{new_username}", payload={"username": new_username})
 
-    with patch(
-        "custom_components.leetcode_hacs.async_setup_entry", return_value=True
-    ):
+    with patch("custom_components.leetcode_hacs.async_setup_entry", return_value=True):
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {CONF_USERNAME: new_username, CONF_BASE_URL: new_url},
@@ -153,9 +140,7 @@ async def test_options_flow(
 ) -> None:
     """The options flow stores the polling interval."""
     config_entry.add_to_hass(hass)
-    with patch(
-        "custom_components.leetcode_hacs.async_setup_entry", return_value=True
-    ):
+    with patch("custom_components.leetcode_hacs.async_setup_entry", return_value=True):
         result = await hass.config_entries.options.async_init(config_entry.entry_id)
         assert result["type"] is FlowResultType.FORM
 
@@ -164,4 +149,7 @@ async def test_options_flow(
         )
 
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert result["data"] == {CONF_SCAN_INTERVAL: 600}
+    # The form's `streak_warning_hour` field has a default that voluptuous
+    # fills in even when the caller only passes `scan_interval`.
+    assert result["data"][CONF_SCAN_INTERVAL] == 600
+    assert "streak_warning_hour" in result["data"]

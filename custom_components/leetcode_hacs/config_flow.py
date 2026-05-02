@@ -6,7 +6,6 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
-from yarl import URL
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -22,6 +21,7 @@ from homeassistant.helpers.selector import (
     TextSelectorConfig,
     TextSelectorType,
 )
+from yarl import URL
 
 from .api import (
     LeetCodeApiClient,
@@ -60,9 +60,7 @@ REAUTH_SCHEMA = vol.Schema(
 )
 
 
-async def _validate_user(
-    hass: HomeAssistant, *, username: str, base_url: str
-) -> dict[str, str]:
+async def _validate_user(hass: HomeAssistant, *, username: str, base_url: str) -> dict[str, str]:
     """Run the username/base-url combination through the API."""
     session = async_get_clientsession(hass)
     client = LeetCodeApiClient(session, base_url=base_url, username=username)
@@ -83,9 +81,7 @@ class LeetCodeConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
     MINOR_VERSION = 1
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the manual user-initiated setup step."""
         errors: dict[str, str] = {}
         if user_input is not None:
@@ -104,9 +100,7 @@ class LeetCodeConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(step_id="user", data_schema=USER_SCHEMA, errors=errors)
 
-    async def async_step_reauth(
-        self, entry_data: Mapping[str, Any]
-    ) -> ConfigFlowResult:
+    async def async_step_reauth(self, entry_data: Mapping[str, Any]) -> ConfigFlowResult:
         """Trigger when an existing entry needs new credentials."""
         return await self.async_step_reauth_confirm()
 
@@ -145,9 +139,11 @@ class LeetCodeConfigFlow(ConfigFlow, domain=DOMAIN):
             username = user_input[CONF_USERNAME].strip()
             base_url = user_input.get(CONF_BASE_URL, DEFAULT_BASE_URL).strip()
             new_unique_id = _unique_id(base_url, username)
+            # Reject only if the new identity collides with a *different* entry.
             if new_unique_id != entry.unique_id:
-                await self.async_set_unique_id(new_unique_id)
-                self._abort_if_unique_id_mismatch()
+                for other in self._async_current_entries():
+                    if other.entry_id != entry.entry_id and other.unique_id == new_unique_id:
+                        return self.async_abort(reason="already_configured")
             errors = await _validate_user(self.hass, username=username, base_url=base_url)
             if not errors:
                 return self.async_update_reload_and_abort(
@@ -172,9 +168,7 @@ class LeetCodeConfigFlow(ConfigFlow, domain=DOMAIN):
 class LeetCodeOptionsFlow(OptionsFlow):
     """Lets the user adjust polling and streak-warning options after setup."""
 
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Show / handle the options form."""
         if user_input is not None:
             return self.async_create_entry(data=user_input)
@@ -187,9 +181,7 @@ class LeetCodeOptionsFlow(OptionsFlow):
         )
         schema = vol.Schema(
             {
-                vol.Required(
-                    CONF_SCAN_INTERVAL, default=current_interval
-                ): NumberSelector(
+                vol.Required(CONF_SCAN_INTERVAL, default=current_interval): NumberSelector(
                     NumberSelectorConfig(
                         min=int(MIN_SCAN_INTERVAL.total_seconds()),
                         max=24 * 60 * 60,

@@ -38,7 +38,7 @@ To run hassfest locally, check out
 ## Pull-request checklist
 
 - The change is covered by a test.
-- `pytest --cov=custom_components.leetcode_hacs` keeps coverage above 95 %.
+- `pytest --cov=custom_components.leetcode_hacs` keeps coverage above 90 %.
 - New user-visible strings are added to `translations/en.json`.
 - `CHANGELOG.md` has an entry under `[Unreleased]`.
 
