@@ -47,7 +47,7 @@
           "streak_warning_hour": "Streak-warning hour"
         },
         "data_description": {
-          "streak_warning_hour": "Hour of the day (0–23, local time) at which the \"streak at risk\" binary sensor flips on if you have not yet submitted a problem today."
+          "streak_warning_hour": "Hour of the day (0-23, local time) at which the \"streak at risk\" binary sensor flips on if you have not yet submitted a problem today."
         }
       }
     }

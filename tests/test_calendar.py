@@ -87,7 +87,7 @@ async def test_submissions_calendar_get_events(
         return_response=True,
     )
     events = response[SUBMISSIONS]["events"]
-    # Fixture calendar.json has 4 active days (Apr 25 – Apr 28).
+    # Fixture calendar.json has 4 active days (Apr 25 - Apr 28).
     assert len(events) == 4
     summaries = {event["summary"] for event in events}
     assert {"1 submission", "2 submissions", "3 submissions", "5 submissions"} == summaries
