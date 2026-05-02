@@ -1,0 +1,55 @@
+name: Bug report
+description: Something is not working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please attach a diagnostics download from
+        **Settings → Devices & Services → LeetCode → ⋮ → Download diagnostics**
+        — credentials are redacted automatically.
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+      placeholder: "2026.4.0"
+    validations:
+      required: true
+  - type: input
+    id: integration_version
+    attributes:
+      label: leetcode-hacs version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: api
+    attributes:
+      label: API endpoint
+      options:
+        - Public hosted instance (alfa-leetcode-api.onrender.com)
+        - Self-hosted alfa-leetcode-api
+    validations:
+      required: true
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened
+      description: A clear description of the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      render: shell
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics file (drag-and-drop)

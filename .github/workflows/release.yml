@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: Package release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify manifest version matches release tag
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          MANIFEST_VERSION=$(jq -r .version custom_components/leetcode_hacs/manifest.json)
+          STRIPPED_TAG="${TAG#v}"
+          if [ "$MANIFEST_VERSION" != "$STRIPPED_TAG" ]; then
+            echo "manifest.json version ($MANIFEST_VERSION) does not match tag ($STRIPPED_TAG)" >&2
+            exit 1
+          fi
+
+      - name: Create zip artefact
+        run: |
+          cd custom_components/leetcode_hacs
+          zip ../../leetcode_hacs.zip -r ./
+
+      - name: Attach zip to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: leetcode_hacs.zip

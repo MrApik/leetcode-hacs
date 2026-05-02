@@ -1,0 +1,20 @@
+{
+  "questionLink": "https://leetcode.com/problems/two-sum/",
+  "link": "https://leetcode.com/problems/two-sum/",
+  "questionId": "1",
+  "questionFrontendId": "1",
+  "questionTitle": "Two Sum",
+  "titleSlug": "two-sum",
+  "difficulty": "Easy",
+  "isPaidOnly": false,
+  "topicTags": [
+    {"name": "Array", "slug": "array", "translatedName": null},
+    {"name": "Hash Table", "slug": "hash-table", "translatedName": null}
+  ],
+  "hints": [
+    "A really brute force way would be to search for all possible pairs of numbers but that would be too slow.",
+    "So, if we fix one of the numbers, say x, we have to scan the entire array to find the next number y which is value - x where value is the input parameter."
+  ],
+  "likes": 60000,
+  "dislikes": 2000
+}

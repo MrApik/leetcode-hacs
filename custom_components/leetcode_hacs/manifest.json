@@ -1,0 +1,14 @@
+{
+  "domain": "leetcode_hacs",
+  "name": "LeetCode",
+  "codeowners": ["@MrApik"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/MrApik/leetcode-hacs",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/MrApik/leetcode-hacs/issues",
+  "loggers": ["custom_components.leetcode_hacs"],
+  "requirements": [],
+  "version": "0.1.0"
+}

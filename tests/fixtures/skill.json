@@ -1,0 +1,13 @@
+{
+  "fundamental": [
+    {"tagName": "Array", "tagSlug": "array", "problemsSolved": 180},
+    {"tagName": "String", "tagSlug": "string", "problemsSolved": 90}
+  ],
+  "intermediate": [
+    {"tagName": "Hash Table", "tagSlug": "hash-table", "problemsSolved": 75},
+    {"tagName": "Binary Search", "tagSlug": "binary-search", "problemsSolved": 30}
+  ],
+  "advanced": [
+    {"tagName": "Dynamic Programming", "tagSlug": "dynamic-programming", "problemsSolved": 60}
+  ]
+}

@@ -1,0 +1,138 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "leetcode-hacs"
+version = "0.1.0"
+description = "Home Assistant custom integration that exposes LeetCode statistics as entities."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.13"
+authors = [{ name = "leetcode-hacs contributors" }]
+keywords = ["home-assistant", "hacs", "leetcode", "integration"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Framework :: AsyncIO",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Home Automation",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "homeassistant>=2025.1.0",
+  "pytest>=8.3",
+  "pytest-asyncio>=0.24",
+  "pytest-cov>=5.0",
+  "pytest-homeassistant-custom-component>=0.13",
+  "syrupy>=4.7",
+  "aioresponses>=0.7.6",
+  "ruff>=0.7",
+  "mypy>=1.13",
+  "pre-commit>=4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/MrApik/leetcode-hacs"
+Issues = "https://github.com/MrApik/leetcode-hacs/issues"
+Changelog = "https://github.com/MrApik/leetcode-hacs/blob/master/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["custom_components/leetcode_hacs"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+src = ["custom_components", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "A",   # flake8-builtins
+  "ASYNC",
+  "B",   # flake8-bugbear
+  "C4",  # flake8-comprehensions
+  "D",   # pydocstyle
+  "E",
+  "F",
+  "FA",  # flake8-future-annotations
+  "I",   # isort
+  "ICN",
+  "N",
+  "PERF",
+  "PGH",
+  "PL",
+  "PT",  # flake8-pytest-style
+  "PTH",
+  "RET",
+  "RUF",
+  "SIM",
+  "T20", # flake8-print
+  "TID", # flake8-tidy-imports
+  "TRY",
+  "UP",  # pyupgrade
+  "W",
+]
+ignore = [
+  "D203",   # one-blank-line-before-class (mutually exclusive with D211)
+  "D213",   # multi-line-summary-second-line (mutually exclusive with D212)
+  "PLR0913", # too-many-arguments — HA entity descriptions are wide on purpose
+  "TRY003", # avoid specifying long messages outside exception class
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D", "PLR2004", "S101"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unreachable = true
+warn_unused_ignores = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+no_implicit_reexport = true
+plugins = []
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+asyncio_mode = "auto"
+addopts = [
+  "-ra",
+  "--strict-config",
+  "--strict-markers",
+  "--cov=custom_components.leetcode_hacs",
+  "--cov-report=term-missing",
+  "--cov-report=xml",
+]
+testpaths = ["tests"]
+filterwarnings = [
+  "error",
+  # pytest-homeassistant-custom-component re-emits deprecation noise from upstream libs.
+  "ignore::DeprecationWarning:pytest_homeassistant_custom_component",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["custom_components/leetcode_hacs"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "raise NotImplementedError",
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+]
+fail_under = 95
+show_missing = true

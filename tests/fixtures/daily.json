@@ -1,0 +1,17 @@
+{
+  "questionLink": "https://leetcode.com/problems/two-sum/",
+  "date": "2026-04-28",
+  "questionId": "1",
+  "questionFrontendId": "1",
+  "questionTitle": "Two Sum",
+  "titleSlug": "two-sum",
+  "difficulty": "Easy",
+  "isPaidOnly": false,
+  "topicTags": [
+    {"name": "Array", "slug": "array", "translatedName": null},
+    {"name": "Hash Table", "slug": "hash-table", "translatedName": null}
+  ],
+  "hints": ["Use a hash map."],
+  "likes": 60000,
+  "dislikes": 2000
+}

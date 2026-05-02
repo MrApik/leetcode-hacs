@@ -1,0 +1,32 @@
+refresh:
+  name: Refresh
+  description: >-
+    Refresh LeetCode data immediately, bypassing the configured polling
+    interval. Useful right after solving a problem.
+  fields:
+    entry_id:
+      name: Profile
+      description: >-
+        The LeetCode profile to refresh. If omitted, every configured
+        profile is refreshed.
+      required: false
+      selector:
+        config_entry:
+          integration: leetcode_hacs
+
+fetch_problem:
+  name: Fetch problem
+  description: >-
+    Fetch a single LeetCode problem's metadata (title, difficulty, tags,
+    hints, link, …) by its title slug. Returns the data so it can be
+    consumed by templates, notifications, or TTS.
+  fields:
+    title_slug:
+      name: Title slug
+      description: >-
+        The URL-safe slug of the problem (the part after `/problems/` in
+        the LeetCode URL — e.g. `two-sum`).
+      required: true
+      example: two-sum
+      selector:
+        text:

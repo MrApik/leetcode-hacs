@@ -1,0 +1,108 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect a LeetCode profile",
+        "description": "Enter your LeetCode username. The default API endpoint is the public alfa-leetcode-api instance; replace it with the URL of your self-hosted instance if you run one.",
+        "data": {
+          "username": "LeetCode username",
+          "base_url": "API base URL"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconnect LeetCode profile",
+        "description": "Confirm or update the LeetCode username for this profile.",
+        "data": {
+          "username": "LeetCode username"
+        }
+      },
+      "reconfigure": {
+        "title": "Update LeetCode profile",
+        "description": "Change the username or API base URL for this profile.",
+        "data": {
+          "username": "LeetCode username",
+          "base_url": "API base URL"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to reach the LeetCode API. Check your network and the configured base URL.",
+      "rate_limited": "The API rate limit (120 requests / hour for the public instance) is currently exceeded. Try again later or self-host alfa-leetcode-api.",
+      "unknown_user": "That username could not be found on LeetCode."
+    },
+    "abort": {
+      "already_configured": "This LeetCode profile is already configured.",
+      "reauth_successful": "LeetCode credentials have been updated.",
+      "reconfigure_successful": "LeetCode profile has been updated.",
+      "unique_id_mismatch": "The new profile does not match the existing entry."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "LeetCode options",
+        "description": "Adjust polling cadence and the streak-warning threshold. The minimum polling interval is 5 minutes (the upstream API caches responses for 5 min).",
+        "data": {
+          "scan_interval": "Polling interval",
+          "streak_warning_hour": "Streak-warning hour"
+        },
+        "data_description": {
+          "streak_warning_hour": "Hour of the day (0–23, local time) at which the \"streak at risk\" binary sensor flips on if you have not yet submitted a problem today."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "easy_solved": { "name": "Easy solved" },
+      "medium_solved": { "name": "Medium solved" },
+      "hard_solved": { "name": "Hard solved" },
+      "contest_rating": { "name": "Contest rating" },
+      "daily_challenge": { "name": "Daily challenge" },
+      "recent_submissions": { "name": "Recent submissions" },
+      "top_language": { "name": "Top language" },
+      "top_skill": { "name": "Top skill" }
+    },
+    "binary_sensor": {
+      "daily_challenge_solved": { "name": "Daily challenge solved" },
+      "streak_at_risk": { "name": "Streak at risk" }
+    },
+    "calendar": {
+      "contests": { "name": "Contests" },
+      "submissions": { "name": "Submissions" }
+    }
+  },
+  "exceptions": {
+    "cannot_connect": {
+      "message": "Unable to reach the LeetCode API."
+    },
+    "rate_limited": {
+      "message": "The LeetCode API rate limit is currently exceeded."
+    },
+    "unknown_user": {
+      "message": "The configured LeetCode username was not found."
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Refresh",
+      "description": "Refresh LeetCode data immediately, bypassing the configured polling interval.",
+      "fields": {
+        "entry_id": {
+          "name": "Profile",
+          "description": "The LeetCode profile to refresh. If omitted, every configured profile is refreshed."
+        }
+      }
+    },
+    "fetch_problem": {
+      "name": "Fetch problem",
+      "description": "Fetch a single LeetCode problem's metadata by its title slug. Returns the data so it can be consumed by templates, notifications, or TTS.",
+      "fields": {
+        "title_slug": {
+          "name": "Title slug",
+          "description": "The URL-safe slug of the problem (the part after /problems/ in the LeetCode URL)."
+        }
+      }
+    }
+  }
+}

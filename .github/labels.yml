@@ -1,0 +1,29 @@
+# Issue / PR labels used by Release Drafter and dependabot.
+# Apply via the labeler action or manually.
+- name: breaking
+  color: "b60205"
+  description: Breaking change
+- name: feature
+  color: "0e8a16"
+  description: New feature
+- name: enhancement
+  color: "a2eeef"
+  description: Improvement to an existing feature
+- name: bug
+  color: "d73a4a"
+  description: Something isn't working
+- name: fix
+  color: "d73a4a"
+  description: A bug fix
+- name: documentation
+  color: "0075ca"
+  description: Improvements to docs
+- name: chore
+  color: "fef2c0"
+  description: Internal maintenance
+- name: ci
+  color: "fef2c0"
+  description: CI / GitHub Actions
+- name: dependencies
+  color: "0366d6"
+  description: Dependency updates
